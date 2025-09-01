@@ -5,10 +5,14 @@ import (
 	"database/sql"
 )
 
-type UsersStore struct {
-	DB *sql.DB
+type User struct {
+	ID int64 `json:"id"`
 }
 
-func (u UsersStore) Create(ctx context.Context) error {
+type UserStore struct {
+	db *sql.DB
+}
+
+func (s UserStore) Create(ctx context.Context, user *User) error {
 	return nil
 }
