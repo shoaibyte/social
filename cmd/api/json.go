@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -14,19 +12,12 @@ func writeJSON(w http.ResponseWriter, status int, data any) error {
 }
 
 func readJSON(w http.ResponseWriter, r *http.Request, data any) error {
-	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
-	defer r.Body.Close()
+	maxBytes := 1_048_578 // 1 MB
+	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 
-	dec := json.NewDecoder(r.Body)
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(data); err != nil {
-		return err
-	}
-
-	if err := dec.Decode(&struct{}{}); err != io.EOF {
-		return fmt.Errorf("body must contain a single JSON value")
-	}
-	return nil
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	return decoder.Decode(data)
 }
 
 func writeJSONError(w http.ResponseWriter, status int, message string) error {

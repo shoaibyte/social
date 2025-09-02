@@ -9,7 +9,6 @@ import (
 )
 
 const version = "0.0.1"
-const maxBodyBytes = 1_048_578 + 2
 
 func main() {
 	cfg := config{
