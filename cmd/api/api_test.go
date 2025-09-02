@@ -22,7 +22,6 @@ func newTestApp() *application {
 				maxIdleTime:  "0s",
 			},
 		},
-		store: nil, // store not required for the router wiring tests
 	}
 }
 
