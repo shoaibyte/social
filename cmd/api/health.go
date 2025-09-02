@@ -1,7 +1,21 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
 
-func (app *application) healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Write([]byte("Alive..."))
+func (app *application) healthCheckHandler(w http.ResponseWriter, _ *http.Request) error {
+	data := map[string]string{
+		"status":  "ok",
+		"env":     app.config.env,
+		"version": version,
+		"time":    time.Now().UTC().Format(time.RFC3339),
+	}
+
+	if err := writeJSON(w, http.StatusOK, data); err != nil {
+		return writeJSONError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	return nil
 }
