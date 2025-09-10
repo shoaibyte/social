@@ -1,8 +1,12 @@
 package main
 
 import (
+	"errors"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 	"social/internal/store"
+	"strconv"
+	"strings"
 )
 
 type CreatePostPayload struct {
@@ -14,9 +18,7 @@ type CreatePostPayload struct {
 func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	var payload CreatePostPayload
 	if err := readJSON(w, r, &payload); err != nil {
-		if err := writeJSONError(w, http.StatusUnprocessableEntity, err.Error()); err != nil {
-			return
-		}
+		app.unprocessableEntityResponse(w, r, err)
 		return
 	}
 
@@ -32,16 +34,39 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 
 	if err := app.store.Posts.Create(ctx, post); err != nil {
-		if err := writeJSONError(w, http.StatusInternalServerError, err.Error()); err != nil {
-			return
-		}
+		app.internalServerError(w, r, err)
 		return
 	}
 
 	if err := writeJSON(w, http.StatusCreated, post); err != nil {
-		if err := writeJSONError(w, http.StatusInternalServerError, err.Error()); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
+func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
+	postID, err := strconv.ParseInt(strings.TrimSpace(chi.URLParam(r, "postID")), 10, 64)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	post, err := app.store.Posts.Get(ctx, postID)
+	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.NotFoundResponse(w, r, err)
+			return
+		default:
+			app.internalServerError(w, r, err)
 			return
 		}
+	}
+
+	if err := writeJSON(w, http.StatusOK, post); err != nil {
+		app.internalServerError(w, r, err)
 		return
 	}
 }
