@@ -52,7 +52,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	postID, err := strconv.ParseInt(strings.TrimSpace(chi.URLParam(r, "postID")), 10, 64)
 	if err != nil {
-		app.internalServerError(w, r, err)
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
