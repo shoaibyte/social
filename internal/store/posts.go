@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/lib/pq"
+	"time"
 )
 
 type Post struct {
@@ -13,8 +14,8 @@ type Post struct {
 	Title     string    `json:"title"`
 	UserID    int64     `json:"user_id"`
 	Tags      []string  `json:"tags"`
-	CreatedAt string    `json:"created_at"`
-	UpdatedAt string    `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 	Comments  []Comment `json:"comments"`
 }
 
