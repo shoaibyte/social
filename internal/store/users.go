@@ -3,10 +3,16 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"time"
 )
 
 type User struct {
-	ID int64 `json:"id"`
+	ID        int64     `json:"id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type UserStore struct {
@@ -14,5 +20,24 @@ type UserStore struct {
 }
 
 func (s UserStore) Create(ctx context.Context, user *User) error {
-	return nil
+	query := `INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, created_at`
+
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		user.Username,
+		user.Email,
+		user.Password,
+	).Scan(
+		&user.ID,
+		&user.CreatedAt,
+	)
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return ErrNotFound
+	case err != nil:
+		return err
+	default:
+		return nil
+	}
 }
