@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"time"
 )
@@ -14,6 +15,7 @@ func (app *application) healthCheckHandler(w http.ResponseWriter, _ *http.Reques
 	}
 
 	if err := writeJSON(w, http.StatusOK, data); err != nil {
+		log.Printf("health check: failed to write JSON response: %v", err)
 		return
 	}
 

@@ -78,16 +78,9 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
-	idParam := chi.URLParam(r, "postID")
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+	post := getPostFromCtx(r)
 
-	ctx := r.Context()
-
-	if err := app.store.Posts.Delete(ctx, id); err != nil {
+	if err := app.store.Posts.Delete(r.Context(), post.ID); err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
 			app.NotFoundResponse(w, r, err)
@@ -105,6 +98,7 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 	var payload UpdatePostPayload
 	if err := readJSON(w, r, &payload); err != nil {
 		app.unprocessableEntityResponse(w, r, err)
+		return
 	}
 
 	if err := Validate.Struct(payload); err != nil {
@@ -139,7 +133,7 @@ func (app *application) postsContextMiddleware(next http.Handler) http.Handler {
 
 		ctx := r.Context()
 
-		post, err := app.store.Posts.Get(ctx, postID)
+		post, err := app.store.Posts.GetByID(ctx, postID)
 		if err != nil {
 			switch {
 			case errors.Is(err, store.ErrNotFound):
