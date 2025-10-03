@@ -1,11 +1,12 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"time"
 )
 
-func (app *application) healthCheckHandler(w http.ResponseWriter, _ *http.Request) error {
+func (app *application) healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 	data := map[string]string{
 		"status":  "ok",
 		"env":     app.config.env,
@@ -14,8 +15,9 @@ func (app *application) healthCheckHandler(w http.ResponseWriter, _ *http.Reques
 	}
 
 	if err := writeJSON(w, http.StatusOK, data); err != nil {
-		return writeJSONError(w, http.StatusInternalServerError, err.Error())
+		log.Printf("health check: failed to write JSON response: %v", err)
+		return
 	}
 
-	return nil
+	return
 }
